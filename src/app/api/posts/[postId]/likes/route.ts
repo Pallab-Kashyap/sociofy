@@ -56,12 +56,38 @@ export async function POST(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.like.create({
-      data: {
-        userId: loggedInUser.id,
-        postId,
-      },
+    // Get the post to check the owner
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { userId: true },
     });
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Create like and notification in a transaction
+    await prisma.$transaction([
+      prisma.like.create({
+        data: {
+          userId: loggedInUser.id,
+          postId,
+        },
+      }),
+      // Only create notification if the user is not liking their own post
+      ...(post.userId !== loggedInUser.id
+        ? [
+            prisma.notification.create({
+              data: {
+                issuerId: loggedInUser.id,
+                recipientId: post.userId,
+                postId: postId,
+                type: "LIKE",
+              },
+            }),
+          ]
+        : []),
+    ]);
 
     return NextResponse.json({ message: "Post liked" }, { status: 201 });
   } catch (error) {
@@ -82,12 +108,22 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.like.deleteMany({
-      where: {
-        userId: loggedInUser.id,
-        postId,
-      },
-    });
+    // Delete like and associated notification in a transaction
+    await prisma.$transaction([
+      prisma.like.deleteMany({
+        where: {
+          userId: loggedInUser.id,
+          postId,
+        },
+      }),
+      prisma.notification.deleteMany({
+        where: {
+          issuerId: loggedInUser.id,
+          postId: postId,
+          type: "LIKE",
+        },
+      }),
+    ]);
 
     return NextResponse.json({ message: "Like removed" }, { status: 200 });
   } catch (error) {

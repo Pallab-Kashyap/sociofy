@@ -14,6 +14,9 @@ import FollowButton from "@/components/FollowButton";
 import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
 import EditProfileButton from "./EditProfileButton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserFollowers from "./UserFollowers";
+import UserFollowing from "./UserFollowing";
 
 // Updated PageProps: params is now a Promise resolving to an object with username
 interface PageProps {
@@ -37,7 +40,9 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
   return user;
 });
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   // Await params to access the username
   const { username } = await params;
   const { user: loggedInUser } = await validateRequest();
@@ -76,12 +81,30 @@ export default async function Page({ params }: PageProps) {
     <main className="mt-6 flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
         <UserProfile user={user} loggedInUserId={loggedInUser.id} />
-        <div className="rounded-2xl bg-card p-5 shadow-sm">
-          <h2 className="text-center text-2xl font-bold">
-            {user.displayName}&apos;s posts
-          </h2>
-        </div>
-        <UserPosts userId={user.id} />
+
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="followers">
+              Followers ({formatNumber(user._count.followers)})
+            </TabsTrigger>
+            <TabsTrigger value="following">
+              Following ({formatNumber(user._count.following)})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="posts" className="mt-5 space-y-5">
+            <UserPosts userId={user.id} />
+          </TabsContent>
+
+          <TabsContent value="followers" className="mt-5 space-y-5">
+            <UserFollowers userId={user.id} />
+          </TabsContent>
+
+          <TabsContent value="following" className="mt-5 space-y-5">
+            <UserFollowing userId={user.id} />
+          </TabsContent>
+        </Tabs>
       </div>
       <TrendsSidebar />
     </main>

@@ -16,7 +16,7 @@ export default function Page() {
         <div className="md:w-1/2 w-full space-y-10 overflow-y-auto p-10">
             <div className="space-y-1 text-center">
                 <h1 className="text-3xl font-bold">
-                    Sign Up to Sociify
+                    Sign Up to Sociofy
                 </h1>
                 <p className="text-muted-foreground">
                     A place where even <span className="italic">you </span>
@@ -30,9 +30,9 @@ export default function Page() {
                 </div>
             </div>
         </div>
-      <Image 
-        src={signUpImage} 
-        alt="sign up image" 
+      <Image
+        src={signUpImage}
+        alt="sign up image"
         className="w-1/2 hidden object-cover md:block "/>
       </div>
     </main>

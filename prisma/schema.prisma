@@ -10,9 +10,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -37,6 +36,7 @@ model User {
   createdAt DateTime @default(now())
 
   @@map("users")
+  @@index([username, displayName])
 }
 
 model Session {
@@ -55,6 +55,8 @@ model Follow {
   following   User   @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
   @@map("follows")
 }
 
@@ -72,6 +74,8 @@ model Post {
   createdAt DateTime @default(now())
 
   @@map("posts")
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
 }
 
 model Media {
@@ -102,6 +106,8 @@ model Comment {
   createdAt DateTime @default(now())
 
   @@map("comments")
+  @@index([postId])
+  @@index([userId])
 }
 
 model Like {
@@ -111,6 +117,8 @@ model Like {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+  @@index([postId])
+  @@index([userId])
   @@map("likes")
 }
 
@@ -124,6 +132,7 @@ model Bookmark {
   createdAt DateTime @default(now())
 
   @@unique([userId, postId])
+  @@index([userId])
   @@map("bookmarks")
 }
 
@@ -141,6 +150,8 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@map("notifications")
+  @@index([recipientId])
+  @@index([issuerId])
 }
 
 enum NotificationType {

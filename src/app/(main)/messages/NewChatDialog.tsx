@@ -43,7 +43,7 @@ export default function NewChatDialog({
           role: { $ne: "admin" },
           ...(searchInputDebounced
             ? {
-                $ar: [
+                $or: [
                   { name: { $autocomplete: searchInputDebounced } },
                   { username: { $autocomplete: searchInputDebounced } },
                 ],

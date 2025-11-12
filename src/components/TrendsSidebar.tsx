@@ -82,10 +82,10 @@ async function WhoToFollow() {
 const getTrendingTopics = unstable_cache(
   async () => {
     const result = await prisma.$queryRaw<{ hashtag: string; count: bigint }[]>`
-        SELECT LOWER(unnest(regexp_matches(content, '#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ_-]+', 'g'))) AS hashtag,
+        SELECT LOWER(unnest(regexp_matches(content, '#[[:alnum:]_]+', 'g'))) AS hashtag,
                COUNT(*) AS count
         FROM posts
-        WHERE content ~ '#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ_-]'
+        WHERE content ~ '#[[:alnum:]_]+'
         GROUP BY hashtag
         ORDER BY count DESC, hashtag ASC
         LIMIT 5

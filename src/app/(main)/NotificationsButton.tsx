@@ -9,9 +9,11 @@ import Link from "next/link";
 
 interface NotificationsButtonProps {
   initialState: NotificationCountInfo;
+  compact?: boolean; // For navbar use
 }
 export default function NotificationButton({
   initialState,
+  compact = false,
 }: NotificationsButtonProps) {
   const { data } = useQuery({
     queryKey: ["unread-notification-count"],
@@ -26,7 +28,9 @@ export default function NotificationButton({
   return (
     <Button
       variant="ghost"
-      className="flex items-center justify-start gap-3"
+      className={
+        compact ? "relative p-2" : "flex items-center justify-start gap-3"
+      }
       title="Notifications"
       asChild
     >
@@ -39,7 +43,7 @@ export default function NotificationButton({
             </span>
           )}
         </div>
-        <span className="hidden lg:inline">Notifications</span>
+        {!compact && <span className="hidden lg:inline">Notifications</span>}
       </Link>
     </Button>
   );

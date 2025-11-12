@@ -5,10 +5,20 @@ import streamServerClient from "@/lib/stream";
 import { slugify } from "@/lib/utils";
 import { OAuth2RequestError } from "arctic";
 import { generateIdFromEntropySize } from "lucia";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
+  console.log("Google auth callback initiated");
+
+  // Debug environment variables
+  console.log("Environment check:", {
+    hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+    hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+    hasStreamKey: !!process.env.NEXT_PUBLIC_STREAM_KEY,
+    hasStreamSecret: !!process.env.STREAM_SECRET,
+  });
+
   const url = req.nextUrl;
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
@@ -35,10 +45,10 @@ export async function GET(req: NextRequest) {
     );
 
     const googleUser = await kyInstance
-      .get("https://www.googleapis.com/oauth2/v1/userinfo", {
+      .get("https://www.googleapis.com/oauth2/v2/userinfo", {
         headers: { Authorization: `Bearer ${tokens.accessToken()}` },
       })
-      .json<{ id: string; name: string }>();
+      .json<{ id: string; name: string; email: string; picture: string }>();
 
     // Look for an existing user.
     const existingUser = await prisma.user.findUnique({
@@ -71,7 +81,9 @@ export async function GET(req: NextRequest) {
           id: userId,
           username,
           displayName: googleUser.name,
+          email: googleUser.email,
           googleId: googleUser.id,
+          avatarUrl: googleUser.picture,
         },
       });
 
@@ -80,6 +92,7 @@ export async function GET(req: NextRequest) {
         username,
         displayName: googleUser.name,
         name: username,
+        image: googleUser.picture,
       });
     });
 
@@ -98,9 +111,27 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error during Google auth callback:", error);
-    if (error instanceof OAuth2RequestError) {
-      return new Response(null, { status: 400 });
+
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
     }
-    return new Response(null, { status: 500 });
+
+    if (error instanceof OAuth2RequestError) {
+      console.error("OAuth2 Error details:", {
+        message: error.message,
+        description: error.description,
+      });
+      return new Response(JSON.stringify({ error: "OAuth2 error" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

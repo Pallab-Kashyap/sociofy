@@ -36,10 +36,11 @@ function LinkifyUsername({ children }: LinkifyProps) {
     </LinkIt>
   );
 }
+
 function LinkifyHashtag({ children }: LinkifyProps) {
   return (
     <LinkIt
-      regex={/(#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ'’-]+)/}
+      regex={/(#[a-zA-Z0-9_]+)/}
       component={(match, key) => (
         <Link
           key={key}
