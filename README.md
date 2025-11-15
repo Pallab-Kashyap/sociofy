@@ -51,8 +51,8 @@ NextJS Social Media App serves as a comprehensive social networking solution whe
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/Mustafaguzel2/nextjs-social-media-app.git
-   cd nextjs-social-media-app
+   git clone git@github.com:Pallab-Kashyap/sociofy.git
+   cd sociofy
    ```
 
 2. **Install Dependencies**
