@@ -3,6 +3,9 @@ import TrendsSidebar from "@/components/TrendsSidebar";
 import ForYouFeed from "./ForYouFeed";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FollowingFeed from "./FollowingFeed";
+
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <main className="flex w-full min-w-0 gap-5">
